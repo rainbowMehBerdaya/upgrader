@@ -67,8 +67,7 @@ class Upgrader {
   /// The localized messages used for display in upgrader.
   UpgraderMessages? messages;
 
-  final notInitializedExceptionMessage =
-      'initialize() not called. Must be called first.';
+  final notInitializedExceptionMessage = 'initialize() not called. Must be called first.';
 
   /// Called when the ignore button is tapped or otherwise activated.
   /// Return false when the default behavior should not execute.
@@ -175,16 +174,14 @@ class Upgrader {
     if (_packageInfo == null) {
       _packageInfo = await PackageInfo.fromPlatform();
       if (debugLogging) {
-        print(
-            'upgrader: package info packageName: ${_packageInfo!.packageName}');
+        print('upgrader: package info packageName: ${_packageInfo!.packageName}');
         print('upgrader: package info appName: ${_packageInfo!.appName}');
         print('upgrader: package info version: ${_packageInfo!.version}');
       }
     }
 
-    await _updateVersionInfo();
-
     _installedVersion = _packageInfo!.version;
+    await _updateVersionInfo();
 
     return true;
   }
@@ -207,12 +204,17 @@ class Upgrader {
           bestItem.versionString != null &&
           bestItem.versionString!.isNotEmpty) {
         if (debugLogging) {
-          print(
-              'upgrader: appcast best item version: ${bestItem.versionString}');
+          print('upgrader: appcast best item version: ${bestItem.versionString}');
         }
         _appStoreVersion ??= bestItem.versionString;
         _appStoreListingURL ??= bestItem.fileURL;
-        if (bestItem.isCriticalUpdate) {
+        print('IS CRITICAL UPDATE');
+        print(bestItem.isCriticalUpdate(
+          packageInfoVersion: _packageInfo!.version,
+        ));
+        if (bestItem.isCriticalUpdate(
+          packageInfoVersion: _packageInfo!.version,
+        )) {
           _isCriticalUpdate = true;
         }
         _releaseNotes = bestItem.itemDescription;
@@ -235,8 +237,8 @@ class Upgrader {
       } else if (platform == TargetPlatform.iOS) {
         final iTunes = ITunesSearchAPI();
         iTunes.client = client;
-        final response = await (iTunes
-            .lookupByBundleId(_packageInfo!.packageName, country: country));
+        final response =
+            await (iTunes.lookupByBundleId(_packageInfo!.packageName, country: country));
 
         if (response != null) {
           _appStoreVersion ??= ITunesResults.version(response);
@@ -264,9 +266,7 @@ class Upgrader {
   }
 
   bool _isAppcastThisPlatform() {
-    if (appcastConfig == null ||
-        appcastConfig!.url == null ||
-        appcastConfig!.url!.isEmpty) {
+    if (appcastConfig == null || appcastConfig!.url == null || appcastConfig!.url!.isEmpty) {
       return false;
     }
 
@@ -303,10 +303,8 @@ class Upgrader {
   String message() {
     var msg = messages!.message(UpgraderMessage.body)!;
     msg = msg.replaceAll('{{appName}}', appName());
-    msg = msg.replaceAll(
-        '{{currentAppStoreVersion}}', currentAppStoreVersion() ?? '');
-    msg = msg.replaceAll(
-        '{{currentInstalledVersion}}', currentInstalledVersion() ?? '');
+    msg = msg.replaceAll('{{currentAppStoreVersion}}', currentAppStoreVersion() ?? '');
+    msg = msg.replaceAll('{{currentInstalledVersion}}', currentInstalledVersion() ?? '');
     return msg;
   }
 
@@ -316,8 +314,7 @@ class Upgrader {
       final shouldDisplay = shouldDisplayUpgrade();
       if (debugLogging) {
         print('upgrader: shouldDisplayUpgrade: $shouldDisplay');
-        print(
-            'upgrader: shouldDisplayReleaseNotes: ${shouldDisplayReleaseNotes()}');
+        print('upgrader: shouldDisplayReleaseNotes: ${shouldDisplayReleaseNotes()}');
       }
       if (shouldDisplay) {
         _displayed = true;
@@ -397,8 +394,7 @@ class Upgrader {
   }
 
   bool alreadyIgnoredThisVersion() {
-    final rv =
-        _userIgnoredVersion != null && _userIgnoredVersion == _appStoreVersion;
+    final rv = _userIgnoredVersion != null && _userIgnoredVersion == _appStoreVersion;
     if (rv && debugLogging) {
       print('upgrader: alreadyIgnoredThisVersion: true');
     }
@@ -446,9 +442,7 @@ class Upgrader {
       // Get the system locale
       locale = WidgetsBinding.instance!.window.locale;
     }
-    final code = locale == null || locale.countryCode == null
-        ? 'US'
-        : locale.countryCode;
+    final code = locale == null || locale.countryCode == null ? 'US' : locale.countryCode;
     return code;
   }
 
@@ -499,8 +493,8 @@ class Upgrader {
     return false;
   }
 
-  AlertDialog _alertDialog(String title, String message, String? releaseNotes,
-      BuildContext context) {
+  AlertDialog _alertDialog(
+      String title, String message, String? releaseNotes, BuildContext context) {
     Widget? notes;
     if (releaseNotes != null) {
       notes = Padding(
@@ -509,8 +503,7 @@ class Upgrader {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Release Notes:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Release Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
               Text(
                 releaseNotes,
                 maxLines: 15,
@@ -536,8 +529,7 @@ class Upgrader {
       actions: <Widget>[
         if (showIgnore)
           TextButton(
-              child:
-                  Text(messages!.message(UpgraderMessage.buttonTitleIgnore)!),
+              child: Text(messages!.message(UpgraderMessage.buttonTitleIgnore)!),
               onPressed: () => onUserIgnored(context, true)),
         if (showLater)
           TextButton(
@@ -550,16 +542,15 @@ class Upgrader {
     );
   }
 
-  CupertinoAlertDialog _cupertinoAlertDialog(String title, String message,
-      String? releaseNotes, BuildContext context) {
+  CupertinoAlertDialog _cupertinoAlertDialog(
+      String title, String message, String? releaseNotes, BuildContext context) {
     Widget? notes;
     if (releaseNotes != null) {
       notes = Padding(
           padding: EdgeInsets.only(top: 15.0),
           child: Column(
             children: <Widget>[
-              Text('Release Notes:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Release Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
               Text(
                 releaseNotes,
                 maxLines: 14,
@@ -584,8 +575,7 @@ class Upgrader {
       actions: <Widget>[
         if (showIgnore)
           CupertinoDialogAction(
-              child:
-                  Text(messages!.message(UpgraderMessage.buttonTitleIgnore)!),
+              child: Text(messages!.message(UpgraderMessage.buttonTitleIgnore)!),
               onPressed: () => onUserIgnored(context, true)),
         if (showLater)
           CupertinoDialogAction(

@@ -44,8 +44,7 @@ class Appcast {
     items!.forEach((AppcastItem item) {
       if (item.hostSupportsItem(osVersion: osVersionString)) {
         if (bestItem == null ||
-            Version.parse(item.versionString!) >
-                Version.parse(bestItem!.versionString!)) {
+            Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) {
           bestItem = item;
         }
       }
@@ -102,6 +101,7 @@ class Appcast {
         String? newVersion;
         String? itemVersion;
         String? enclosureVersion;
+        final aturKulinerItem = <AturKulinerItem>[];
 
         itemElement.children.forEach((XmlNode childNode) {
           if (childNode is XmlElement) {
@@ -112,14 +112,11 @@ class Appcast {
               itemDescription = childNode.text;
             } else if (name == AppcastConstants.ElementEnclosure) {
               childNode.attributes.forEach((XmlAttribute attribute) {
-                if (attribute.name.toString() ==
-                    AppcastConstants.AttributeVersion) {
+                if (attribute.name.toString() == AppcastConstants.AttributeVersion) {
                   enclosureVersion = attribute.value;
-                } else if (attribute.name.toString() ==
-                    AppcastConstants.AttributeOsType) {
+                } else if (attribute.name.toString() == AppcastConstants.AttributeOsType) {
                   osString = attribute.value;
-                } else if (attribute.name.toString() ==
-                    AppcastConstants.AttributeURL) {
+                } else if (attribute.name.toString() == AppcastConstants.AttributeURL) {
                   fileURL = attribute.value;
                 }
               });
@@ -136,6 +133,30 @@ class Appcast {
                 if (tagChildNode is XmlElement) {
                   final tagName = tagChildNode.name.toString();
                   tags.add(tagName);
+
+                  if (tagName == AppcastConstants.ElementCriticalUpdate) {
+                    tagChildNode.children.forEach((XmlNode aturKuliner) {
+                      if (aturKuliner is XmlElement) {
+                        String? fromVersion;
+                        String? untilVersion;
+
+                        aturKuliner.attributes.forEach((XmlAttribute attribute) {
+                          if (attribute.name.toString() == AppcastConstants.AttributeAturKulinerFrom) {
+                            fromVersion = attribute.value;
+                          } else if (attribute.name.toString() == AppcastConstants.AttributeAturKulinerUntil) {
+                            untilVersion = attribute.value;
+                          }
+                        });
+
+                        aturKulinerItem.add(
+                          AturKulinerItem(
+                            fromVersion: fromVersion,
+                            untilVersion: untilVersion,
+                          ),
+                        );
+                      }
+                    });
+                  }
                 }
               });
             } else if (name == AppcastConstants.AttributeVersion) {
@@ -166,6 +187,7 @@ class Appcast {
           tags: tags,
           fileURL: fileURL,
           versionString: newVersion,
+          aturKulinerItem: aturKulinerItem,
         );
         items.add(item);
       });
@@ -199,6 +221,21 @@ class Appcast {
   }
 }
 
+class AturKulinerItem {
+  final String? fromVersion;
+  final String? untilVersion;
+
+  AturKulinerItem({
+    this.fromVersion,
+    this.untilVersion,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'fromVersion': fromVersion,
+    'untilVersion': untilVersion,
+  };
+}
+
 class AppcastItem {
   final String? title;
   final String? dateString;
@@ -213,6 +250,7 @@ class AppcastItem {
   final String? displayVersionString;
   final String? infoURL;
   final List<String>? tags;
+  final List<AturKulinerItem>? aturKulinerItem;
 
   AppcastItem({
     this.title,
@@ -228,13 +266,36 @@ class AppcastItem {
     this.displayVersionString,
     this.infoURL,
     this.tags,
+    this.aturKulinerItem,
   });
 
   /// Returns true if the tags ([AppcastConstants.ElementTags]) contains
   /// critical update ([AppcastConstants.ElementCriticalUpdate]).
-  bool get isCriticalUpdate => tags == null
-      ? false
-      : tags!.contains(AppcastConstants.ElementCriticalUpdate);
+  bool isCriticalUpdate({String? packageInfoVersion}) {
+    if (tags == null) {
+      return false;
+    } else {
+      if (tags!.contains(AppcastConstants.ElementCriticalUpdate)) {
+        if (aturKulinerItem == null) {
+          return false;
+        }
+        for (var element in aturKulinerItem!) {
+          var fromVersion = Version.parse(element.fromVersion);
+          var untilVersion = Version.parse(element.untilVersion);
+          var packageVersion = Version.parse(packageInfoVersion);
+
+          if (packageVersion >= fromVersion && packageVersion <= untilVersion) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
 
   bool hostSupportsItem({String? osVersion, String? currentPlatform}) {
     var supported = true;
@@ -277,17 +338,14 @@ class AppcastConstants {
   static const String AttributeDeltaFrom = 'sparkle:deltaFrom';
   static const String AttributeDSASignature = 'sparkle:dsaSignature';
   static const String AttributeEDSignature = 'sparkle:edSignature';
-  static const String AttributeShortVersionString =
-      'sparkle:shortVersionString';
+  static const String AttributeShortVersionString = 'sparkle:shortVersionString';
   static const String AttributeVersion = 'sparkle:version';
   static const String AttributeOsType = 'sparkle:os';
 
   static const String ElementCriticalUpdate = 'sparkle:criticalUpdate';
   static const String ElementDeltas = 'sparkle:deltas';
-  static const String ElementMinimumSystemVersion =
-      'sparkle:minimumSystemVersion';
-  static const String ElementMaximumSystemVersion =
-      'sparkle:maximumSystemVersion';
+  static const String ElementMinimumSystemVersion = 'sparkle:minimumSystemVersion';
+  static const String ElementMaximumSystemVersion = 'sparkle:maximumSystemVersion';
   static const String ElementReleaseNotesLink = 'sparkle:releaseNotesLink';
   static const String ElementTags = 'sparkle:tags';
 
@@ -299,4 +357,10 @@ class AppcastConstants {
   static const String ElementLink = 'link';
   static const String ElementPubDate = 'pubDate';
   static const String ElementTitle = 'title';
+
+  //ATURKULINER
+  static const String AttributeAturKulinerFrom = 'aturKuliner:from';
+  static const String AttributeAturKulinerUntil = 'aturKuliner:until';
+
+  static const String ElementAturKuliner = 'aturKuliner';
 }
