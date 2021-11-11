@@ -522,10 +522,10 @@ class Upgrader {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Text(message),
-            Padding(
-              padding: EdgeInsets.only(top: 15.0),
-              child: Text(messages!.message(UpgraderMessage.prompt)!),
-            ),
+            // Padding(
+            //   padding: EdgeInsets.only(top: 15.0),
+            //   child: Text(messages!.message(UpgraderMessage.prompt)!),
+            // ),
             if (notes != null) notes,
           ],
         ),
