@@ -199,7 +199,9 @@ class Upgrader {
         var count = appcast.items == null ? 0 : appcast.items!.length;
         print('upgrader: appcast item count: $count');
       }
-      final bestItem = appcast.bestItem();
+      final bestItem = appcast.bestItem(
+        packageInfoVersion: _packageInfo!.version,
+      );
       if (bestItem != null &&
           bestItem.versionString != null &&
           bestItem.versionString!.isNotEmpty) {
@@ -208,15 +210,12 @@ class Upgrader {
         }
         _appStoreVersion ??= bestItem.versionString;
         _appStoreListingURL ??= bestItem.fileURL;
-        print('IS CRITICAL UPDATE');
-        print(bestItem.isCriticalUpdate(
-          packageInfoVersion: _packageInfo!.version,
-        ));
-        if (bestItem.isCriticalUpdate(
-          packageInfoVersion: _packageInfo!.version,
-        )) {
-          _isCriticalUpdate = true;
-        }
+        // if (bestItem.isCriticalUpdate(
+        //   packageInfoVersion: _packageInfo!.version,
+        // )) {
+        //   _isCriticalUpdate = true;
+        // }
+        _isCriticalUpdate = true;
         _releaseNotes = bestItem.itemDescription;
       }
     } else {
@@ -321,8 +320,10 @@ class Upgrader {
         Future.delayed(Duration(milliseconds: 0), () {
           _showDialog(
               context: context,
-              title: messages!.message(UpgraderMessage.title),
-              message: message(),
+              // title: messages!.message(UpgraderMessage.title),
+              title: 'Perbarui Aplikasi',
+              // message: message(),
+              message: 'Mohon untuk perbarui aplikasi untuk dapat menggunakannya kembali',
               releaseNotes: shouldDisplayReleaseNotes() ? _releaseNotes : null,
               canDismissDialog: canDismissDialog);
         });
@@ -503,7 +504,8 @@ class Upgrader {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('Release Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
+              // Text('Release Notes:', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text('Note:', style: TextStyle(fontWeight: FontWeight.bold)),
               Text(
                 releaseNotes,
                 maxLines: 15,
@@ -515,17 +517,19 @@ class Upgrader {
     return AlertDialog(
       title: Text(title),
       content: SingleChildScrollView(
-          child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(message),
-          Padding(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(message),
+            Padding(
               padding: EdgeInsets.only(top: 15.0),
-              child: Text(messages!.message(UpgraderMessage.prompt)!)),
-          if (notes != null) notes,
-        ],
-      )),
+              child: Text(messages!.message(UpgraderMessage.prompt)!),
+            ),
+            if (notes != null) notes,
+          ],
+        ),
+      ),
       actions: <Widget>[
         if (showIgnore)
           TextButton(

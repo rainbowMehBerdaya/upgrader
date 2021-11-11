@@ -35,7 +35,7 @@ class Appcast {
 
   /// Returns the latest item in the Appcast based on OS, OS version, and app
   /// version.
-  AppcastItem? bestItem() {
+  AppcastItem? bestItem({String? packageInfoVersion}) {
     if (items == null) {
       return null;
     }
@@ -43,8 +43,12 @@ class Appcast {
     AppcastItem? bestItem;
     items!.forEach((AppcastItem item) {
       if (item.hostSupportsItem(osVersion: osVersionString)) {
-        if (bestItem == null ||
-            Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) {
+        // print(bestItem);
+        // print(Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!));
+        print(item.isCriticalUpdate(packageInfoVersion: packageInfoVersion));
+        if ((bestItem == null ||
+                Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) &&
+            item.isCriticalUpdate(packageInfoVersion: packageInfoVersion)) {
           bestItem = item;
         }
       }
@@ -141,9 +145,11 @@ class Appcast {
                         String? untilVersion;
 
                         aturKuliner.attributes.forEach((XmlAttribute attribute) {
-                          if (attribute.name.toString() == AppcastConstants.AttributeAturKulinerFrom) {
+                          if (attribute.name.toString() ==
+                              AppcastConstants.AttributeAturKulinerFrom) {
                             fromVersion = attribute.value;
-                          } else if (attribute.name.toString() == AppcastConstants.AttributeAturKulinerUntil) {
+                          } else if (attribute.name.toString() ==
+                              AppcastConstants.AttributeAturKulinerUntil) {
                             untilVersion = attribute.value;
                           }
                         });
@@ -231,9 +237,9 @@ class AturKulinerItem {
   });
 
   Map<String, dynamic> toJson() => {
-    'fromVersion': fromVersion,
-    'untilVersion': untilVersion,
-  };
+        'fromVersion': fromVersion,
+        'untilVersion': untilVersion,
+      };
 }
 
 class AppcastItem {
@@ -283,7 +289,6 @@ class AppcastItem {
           var fromVersion = Version.parse(element.fromVersion);
           var untilVersion = Version.parse(element.untilVersion);
           var packageVersion = Version.parse(packageInfoVersion);
-
           if (packageVersion >= fromVersion && packageVersion <= untilVersion) {
             return true;
           } else {
