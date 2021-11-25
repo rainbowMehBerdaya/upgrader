@@ -275,6 +275,8 @@ class AppcastItem {
   /// Returns true if the tags ([AppcastConstants.ElementTags]) contains
   /// critical update ([AppcastConstants.ElementCriticalUpdate]).
   bool isCriticalUpdate({String? packageInfoVersion}) {
+    bool isCriticalUpdateResult = false;
+
     if (tags == null) {
       return false;
     } else {
@@ -282,21 +284,21 @@ class AppcastItem {
         if (aturKulinerItem == null) {
           return false;
         }
+
         for (var element in aturKulinerItem!) {
           var fromVersion = Version.parse(element.fromVersion);
           var untilVersion = Version.parse(element.untilVersion);
           var packageVersion = Version.parse(packageInfoVersion);
           if (packageVersion >= fromVersion && packageVersion <= untilVersion) {
-            return true;
-          } else {
-            return false;
+            isCriticalUpdateResult = true;
+            return isCriticalUpdateResult;
           }
         }
       } else {
-        return false;
+        return isCriticalUpdateResult;
       }
     }
-    return false;
+    return isCriticalUpdateResult;
   }
 
   bool hostSupportsItem({String? osVersion, String? currentPlatform}) {
