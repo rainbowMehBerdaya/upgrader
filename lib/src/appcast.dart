@@ -42,12 +42,10 @@ class Appcast {
 
     AppcastItem? bestItem;
     items!.forEach((AppcastItem item) {
-      if (item.hostSupportsItem(osVersion: osVersionString)) {
-        if ((bestItem == null ||
-                Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) &&
-            item.isCriticalUpdate(packageInfoVersion: packageInfoVersion)) {
-          bestItem = item;
-        }
+      if ((bestItem == null ||
+          Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) &&
+          item.isCriticalUpdate(packageInfoVersion: packageInfoVersion)) {
+        bestItem = item;
       }
     });
     return bestItem;
@@ -275,7 +273,7 @@ class AppcastItem {
   /// Returns true if the tags ([AppcastConstants.ElementTags]) contains
   /// critical update ([AppcastConstants.ElementCriticalUpdate]).
   bool isCriticalUpdate({String? packageInfoVersion}) {
-    bool isCriticalUpdateResult = false;
+    var isCriticalUpdateResult = false;
 
     if (tags == null) {
       return false;
