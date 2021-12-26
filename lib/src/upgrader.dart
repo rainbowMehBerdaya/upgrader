@@ -150,7 +150,7 @@ class Upgrader {
 
   Future<bool> initialize() async {
     if (_initCalled) {
-      return true;
+      // return true;
     }
 
     _initCalled = true;
