@@ -148,9 +148,13 @@ class Upgrader {
     _appStoreListingURL = url;
   }
 
+  void reInitCalledToFalse() {
+    _initCalled = false;
+  }
+
   Future<bool> initialize() async {
     if (_initCalled) {
-      // return true;
+      return true;
     }
 
     _initCalled = true;
