@@ -327,7 +327,7 @@ class Upgrader {
               // title: messages!.message(UpgraderMessage.title),
               title: 'Perbarui Aplikasi',
               // message: message(),
-              message: 'Mohon untuk perbarui aplikasi untuk dapat menggunakannya kembali',
+              message: 'Beli sate bakar di pasar baru, yuk istirahat sebentar untuk update yang baru~~~ 🥳🥳',
               releaseNotes: shouldDisplayReleaseNotes() ? _releaseNotes : null,
               canDismissDialog: canDismissDialog);
         });
