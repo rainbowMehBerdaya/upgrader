@@ -53,8 +53,7 @@ class UpgraderMessages {
   final String languageCode;
 
   /// Provide a [code] to override the system-reported default locale.
-  UpgraderMessages({String? code})
-      : languageCode = (code ?? findLanguageCode()) {
+  UpgraderMessages({String? code}) : languageCode = (code ?? findLanguageCode()) {
     assert(languageCode.isNotEmpty);
   }
 
@@ -90,9 +89,7 @@ class UpgraderMessages {
       // Get the system locale
       locale = ambiguate(WidgetsBinding.instance)!.window.locale;
     }
-    final code = locale == null || locale.languageCode.isEmpty
-        ? 'en'
-        : locale.languageCode;
+    final code = locale == null || locale.languageCode.isEmpty ? 'en' : locale.languageCode;
     return code;
   }
 
@@ -109,6 +106,10 @@ class UpgraderMessages {
   String get body {
     String message;
     switch (languageCode) {
+      case 'aturKuliner':
+        message =
+        'Beli sate bakar di pasar baru, yuk istirahat sebentar untuk update yang baru~~~ 🥳🥳';
+        break;
       case 'ar':
         message =
             'نسخة جديدة من {{appName}} متوفرة! النسخة {{currentAppStoreVersion}} متوفرة الآن, أنت تستخدم النسخة {{currentInstalledVersion}}.';
@@ -236,6 +237,9 @@ class UpgraderMessages {
   String get buttonTitleIgnore {
     String message;
     switch (languageCode) {
+      case 'aturKuliner':
+        message = 'TOlAK';
+        break;
       case 'ar':
         message = 'تجاهل';
         break;
@@ -334,6 +338,9 @@ class UpgraderMessages {
   String get buttonTitleLater {
     String message;
     switch (languageCode) {
+      case 'aturKuliner':
+        message = 'NANTI';
+        break;
       case 'ar':
         message = 'لاحقاً';
         break;
@@ -432,6 +439,9 @@ class UpgraderMessages {
   String get buttonTitleUpdate {
     String message;
     switch (languageCode) {
+      case 'aturKuliner':
+        message = 'UPDATE SEKARANG';
+        break;
       case 'ar':
         message = 'حدث الآن';
         break;
@@ -530,6 +540,9 @@ class UpgraderMessages {
   String get prompt {
     String message;
     switch (languageCode) {
+      case 'aturKuliner':
+        message = 'Ayo di update AturKuliner mu sekarang! ☺️';
+        break;
       case 'ar':
         message = 'هل تفضل أن يتم التحديث الآن';
         break;
@@ -628,6 +641,9 @@ class UpgraderMessages {
   String get releaseNotes {
     String message;
     switch (languageCode) {
+      case 'aturKuliner':
+        message = 'Tolak';
+        break;
       case 'es':
         message = 'Notas De Lanzamiento';
         break;
@@ -672,6 +688,9 @@ class UpgraderMessages {
   String get title {
     String message;
     switch (languageCode) {
+      case 'aturKuliner':
+        message = 'Perbaharui Aplikasi';
+        break;
       case 'ar':
         message = 'هل تريد تحديث التطبيق؟';
         break;
