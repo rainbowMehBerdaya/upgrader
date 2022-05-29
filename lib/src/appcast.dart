@@ -45,8 +45,6 @@ class Appcast {
 
     AppcastItem? bestItem;
     items!.forEach((AppcastItem item) {
-      print('bestItem: $bestItem');
-
       if (item.hostSupportsItem(osVersion: osVersionString)) {
         if (item.packageInfoVersionSupportsItem(installedVersion: installedVersion)) {
           if (bestItem == null ||
@@ -64,7 +62,6 @@ class Appcast {
     http.Response response;
     try {
       response = await client!.get(Uri.parse(appCastURL));
-      print('response : ${response.toString()}');
     } catch (e) {
       print(e);
       return null;
@@ -363,17 +360,12 @@ class AppcastItem {
     var untilVersion = Version.parse(aturKulinerUntilVersion);
     var installedVersionParse = Version.parse(installedVersion);
 
-    print('fromVersion: $fromVersion');
-    print('untilVersion: $untilVersion');
-    print('packageVersion: $installedVersionParse');
-
     if (installedVersionParse >= fromVersion && installedVersionParse <= untilVersion) {
       supported = true;
     } else {
       supported = false;
     }
 
-    print('supported: $supported');
     return supported;
   }
 }
