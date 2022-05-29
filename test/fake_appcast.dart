@@ -13,7 +13,7 @@ class FakeAppcast extends Fake implements TestAppcast {
   int callCount = 0;
 
   @override
-  AppcastItem bestItem({String? packageInfoVersion}) {
+  AppcastItem bestItem({String? installedVersion}) {
     callCount++;
 
     return AppcastItem(

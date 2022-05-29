@@ -38,17 +38,22 @@ class Appcast {
 
   /// Returns the latest item in the Appcast based on OS, OS version, and app
   /// version.
-  AppcastItem? bestItem({String? packageInfoVersion}) {
+  AppcastItem? bestItem({String? installedVersion}) {
     if (items == null) {
       return null;
     }
 
     AppcastItem? bestItem;
     items!.forEach((AppcastItem item) {
-      if ((bestItem == null ||
-          Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) &&
-          item.isCriticalUpdate(packageInfoVersion: packageInfoVersion)) {
-        bestItem = item;
+      print('bestItem: $bestItem');
+
+      if (item.hostSupportsItem(osVersion: osVersionString)) {
+        if (item.packageInfoVersionSupportsItem(installedVersion: installedVersion)) {
+          if (bestItem == null ||
+              Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) {
+            bestItem = item;
+          }
+        }
       }
     });
     return bestItem;
@@ -59,6 +64,7 @@ class Appcast {
     http.Response response;
     try {
       response = await client!.get(Uri.parse(appCastURL));
+      print('response : ${response.toString()}');
     } catch (e) {
       print(e);
       return null;
@@ -103,7 +109,11 @@ class Appcast {
         String? newVersion;
         String? itemVersion;
         String? enclosureVersion;
-        final aturKulinerItem = <AturKulinerItem>[];
+        String? aturKulinerFromVersion;
+        String? aturKulinerUntilVersion;
+
+        /// LINE 161-165
+        // final aturKulinerItem = <AturKulinerItem>[];
 
         itemElement.children.forEach((XmlNode childNode) {
           if (childNode is XmlElement) {
@@ -136,31 +146,45 @@ class Appcast {
                   final tagName = tagChildNode.name.toString();
                   tags.add(tagName);
 
-                  if (tagName == AppcastConstants.ElementCriticalUpdate) {
-                    tagChildNode.children.forEach((XmlNode aturKuliner) {
-                      if (aturKuliner is XmlElement) {
-                        String? fromVersion;
-                        String? untilVersion;
-
-                        aturKuliner.attributes.forEach((XmlAttribute attribute) {
-                          if (attribute.name.toString() ==
-                              AppcastConstants.AttributeAturKulinerFrom) {
-                            fromVersion = attribute.value;
-                          } else if (attribute.name.toString() ==
-                              AppcastConstants.AttributeAturKulinerUntil) {
-                            untilVersion = attribute.value;
-                          }
-                        });
-
-                        aturKulinerItem.add(
-                          AturKulinerItem(
-                            fromVersion: fromVersion,
-                            untilVersion: untilVersion,
-                          ),
-                        );
-                      }
-                    });
-                  }
+                  /// Aturkuliner Tag inside 'Critical Update' Tags and support for LIST OF ATURKULINER TAGS UPDATE
+                  /// <sparkle:criticalUpdate>
+                  ///     <aturKuliner aturKuliner:from="1.5.0" aturKuliner:until="1.6.0" />
+                  ///     <aturKuliner aturKuliner:from="1.7.0" aturKuliner:until="1.9.0" />
+                  /// </sparkle:criticalUpdate>
+                  // if (tagName == AppcastConstants.ElementCriticalUpdate) {
+                  //   tagChildNode.children.forEach((XmlNode aturKuliner) {
+                  //     if (aturKuliner is XmlElement) {
+                  //       String? fromVersion;
+                  //       String? untilVersion;
+                  //
+                  //       aturKuliner.attributes.forEach((XmlAttribute attribute) {
+                  //         if (attribute.name.toString() ==
+                  //             AppcastConstants.AttributeAturKulinerFrom) {
+                  //           fromVersion = attribute.value;
+                  //         } else if (attribute.name.toString() ==
+                  //             AppcastConstants.AttributeAturKulinerUntil) {
+                  //           untilVersion = attribute.value;
+                  //         }
+                  //       });
+                  //
+                  //       aturKulinerItem.add(
+                  //         AturKulinerItem(
+                  //           fromVersion: fromVersion,
+                  //           untilVersion: untilVersion,
+                  //         ),
+                  //       );
+                  //     }
+                  //   });
+                  // }
+                }
+              });
+            } else if (name == AppcastConstants.ElementAturKuliner) {
+              childNode.attributes.forEach((XmlAttribute attribute) {
+                if (attribute.name.toString() == AppcastConstants.AttributeAturKulinerFrom) {
+                  aturKulinerFromVersion = attribute.value;
+                } else if (attribute.name.toString() ==
+                    AppcastConstants.AttributeAturKulinerUntil) {
+                  aturKulinerUntilVersion = attribute.value;
                 }
               });
             } else if (name == AppcastConstants.AttributeVersion) {
@@ -191,7 +215,11 @@ class Appcast {
           tags: tags,
           fileURL: fileURL,
           versionString: newVersion,
-          aturKulinerItem: aturKulinerItem,
+          aturKulinerFromVersion: aturKulinerFromVersion,
+          aturKulinerUntilVersion: aturKulinerUntilVersion,
+
+          ///  LINE 161-165
+          // aturKulinerItem: aturKulinerItem,
         );
         localItems.add(item);
       });
@@ -256,7 +284,11 @@ class AppcastItem {
   final String? displayVersionString;
   final String? infoURL;
   final List<String>? tags;
-  final List<AturKulinerItem>? aturKulinerItem;
+  final String? aturKulinerFromVersion;
+  final String? aturKulinerUntilVersion;
+
+  /// LINE 161-165
+  // final List<AturKulinerItem>? aturKulinerItem;
 
   AppcastItem({
     this.title,
@@ -272,37 +304,15 @@ class AppcastItem {
     this.displayVersionString,
     this.infoURL,
     this.tags,
-    this.aturKulinerItem,
+    this.aturKulinerFromVersion,
+    this.aturKulinerUntilVersion,
+    // this.aturKulinerItem, LINE 161-165
   });
 
   /// Returns true if the tags ([AppcastConstants.ElementTags]) contains
   /// critical update ([AppcastConstants.ElementCriticalUpdate]).
-  bool isCriticalUpdate({String? packageInfoVersion}) {
-    var isCriticalUpdateResult = false;
-
-    if (tags == null) {
-      return false;
-    } else {
-      if (tags!.contains(AppcastConstants.ElementCriticalUpdate)) {
-        if (aturKulinerItem == null) {
-          return false;
-        }
-
-        for (var element in aturKulinerItem!) {
-          var fromVersion = Version.parse(element.fromVersion);
-          var untilVersion = Version.parse(element.untilVersion);
-          var packageVersion = Version.parse(packageInfoVersion);
-          if (packageVersion >= fromVersion && packageVersion <= untilVersion) {
-            isCriticalUpdateResult = true;
-            return isCriticalUpdateResult;
-          }
-        }
-      } else {
-        return isCriticalUpdateResult;
-      }
-    }
-    return isCriticalUpdateResult;
-  }
+  bool get isCriticalUpdate =>
+      tags == null ? false : tags!.contains(AppcastConstants.ElementCriticalUpdate);
 
   bool hostSupportsItem({String? osVersion, String? currentPlatform}) {
     var supported = true;
@@ -335,6 +345,35 @@ class AppcastItem {
         }
       }
     }
+    return supported;
+  }
+
+  bool packageInfoVersionSupportsItem({String? installedVersion}) {
+    var supported = true;
+
+    if (installedVersion == null ||
+        aturKulinerFromVersion == null ||
+        aturKulinerFromVersion!.isEmpty ||
+        aturKulinerUntilVersion == null ||
+        aturKulinerUntilVersion!.isEmpty) {
+      supported = false;
+    }
+
+    var fromVersion = Version.parse(aturKulinerFromVersion);
+    var untilVersion = Version.parse(aturKulinerUntilVersion);
+    var installedVersionParse = Version.parse(installedVersion);
+
+    print('fromVersion: $fromVersion');
+    print('untilVersion: $untilVersion');
+    print('packageVersion: $installedVersionParse');
+
+    if (installedVersionParse >= fromVersion && installedVersionParse <= untilVersion) {
+      supported = true;
+    } else {
+      supported = false;
+    }
+
+    print('supported: $supported');
     return supported;
   }
 }
