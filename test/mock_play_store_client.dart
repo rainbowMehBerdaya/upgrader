@@ -11,6 +11,7 @@ import 'package:upgrader/upgrader.dart';
 final _filenames = {
   'com.kotoko.express': 'test_play_store_page1.txt',
   'com.testing.test2': 'test_play_store_page2.txt',
+  'com.testing.test3': 'test_play_store_page3.txt',
 };
 
 // Create a MockClient using the Mock class provided by the Mockito package.
@@ -25,7 +26,7 @@ class MockPlayStoreSearchClient {
         if (filename != null && filename.isNotEmpty) {
           if (url == PlayStoreSearchAPI().lookupURLById(id)) {
             final testPage = await getTestPage(filename);
-            final contents = await testPage.readAsString();
+            final contents = testPage.readAsStringSync();
             return http.Response(contents, 200, headers: {
               HttpHeaders.contentTypeHeader: 'text/html; charset=utf-8',
             });
@@ -41,7 +42,7 @@ class MockPlayStoreSearchClient {
 
   static Future<File> getTestPage(String filename) async {
     var testFile = File('test/$filename');
-    final exists = await testFile.exists();
+    final exists = testFile.existsSync();
     if (!exists) {
       testFile = File(filename);
     }

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 /*
  * Copyright (c) 2019-2021 Larry Aasen. All rights reserved.
  */
@@ -10,9 +12,9 @@
 import 'package:upgrader/src/itunes_search_api.dart';
 
 void main(List<String> arguments) async {
-  final defaultLookupBundleId = 'com.google.Maps';
+  const defaultLookupBundleId = 'com.google.Maps';
   var lookupBundleId = defaultLookupBundleId;
-  var lookupAppId;
+  String? lookupAppId;
 
   if (arguments.length == 1) {
     final arg0 = arguments[0].split('=');
@@ -30,9 +32,9 @@ void main(List<String> arguments) async {
 
   final iTunes = ITunesSearchAPI();
   iTunes.debugEnabled = true;
-  final countryCode = 'US';
+  const countryCode = 'US';
 
-  var results;
+  Map? results;
   if (lookupAppId != null) {
     results = await iTunes.lookupById(
       lookupAppId,
@@ -51,11 +53,15 @@ void main(List<String> arguments) async {
   }
 
   final bundleId = ITunesResults.bundleId(results);
+  final description = ITunesResults.description(results);
+  final minAppVersion = ITunesResults.minAppVersion(results);
   final releaseNotes = ITunesResults.releaseNotes(results);
   final trackViewUrl = ITunesResults.trackViewUrl(results);
   final version = ITunesResults.version(results);
 
   print('itunes_lookup bundleId: $bundleId');
+  print('itunes_lookup description: $description');
+  print('itunes_lookup minAppVersion: $minAppVersion');
   print('itunes_lookup releaseNotes: $releaseNotes');
   print('itunes_lookup trackViewUrl: $trackViewUrl');
   print('itunes_lookup version: $version');

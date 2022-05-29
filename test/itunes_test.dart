@@ -29,7 +29,7 @@ void main() {
         equals('https://itunes.apple.com/lookup?id=909253&entity=album'));
 
     // Test the URL using the cache buster and remove it from the URL
-    final testUrl =
+    const testUrl =
         'https://itunes.apple.com/lookup?bundleId=com.google.Maps&country=US&_cb=';
     final url = iTunes
         .lookupURLByBundleId('com.google.Maps', useCacheBuster: true)!
@@ -113,5 +113,33 @@ void main() {
     expect(ITunesResults.bundleId(response), 'com.google.Maps');
     expect(ITunesResults.version(response), '5.6');
     expect(ITunesResults.currency(response), 'EUR');
+  }, skip: false);
+
+  /// Helper method
+  Map resDesc(String description) {
+    return {
+      'results': [
+        {'description': description}
+      ]
+    };
+  }
+
+  /// Helper method
+  String? imav(Map response) {
+    final mav = ITunesResults.minAppVersion(response);
+    return mav?.toString();
+  }
+
+  test('testing minAppVersion', () async {
+    expect(imav(resDesc('test [:mav: 1.2.3]')), '1.2.3');
+    expect(imav(resDesc('test [:mav:1.2.3]')), '1.2.3');
+    expect(imav(resDesc('test [:mav:1.2.3 ]')), '1.2.3');
+    expect(imav(resDesc('test [:mav: 1]')), '1.0.0');
+    expect(imav(resDesc('[:mav: 0.9.9+4]')), '0.9.9+4');
+    expect(imav(resDesc('[:mav: 1.0.0-5.2.pre]')), '1.0.0-5.2.pre');
+    expect(imav({}), isNull);
+    expect(imav(resDesc('test')), isNull);
+    expect(imav(resDesc('test [:mav:]')), isNull);
+    expect(imav(resDesc('test [:mv: 1.2.3]')), isNull);
   }, skip: false);
 }

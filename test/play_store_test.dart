@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Larry Aasen. All rights reserved.
+ * Copyright (c) 2019-2021 Larry Aasen. All rights reserved.
  */
 
 import 'package:flutter_test/flutter_test.dart';
@@ -18,6 +18,8 @@ void main() {
 
     expect(Version.parse('1.2.3').toString(), '1.2.3');
     expect(Version.parse('1.2.3+1').toString(), '1.2.3+1');
+    expect(Version.parse('0.0.0').toString(), '0.0.0');
+    expect(Version.parse('0.0.0+1').toString(), '0.0.0+1');
   }, skip: false);
 
   test('testing PlayStoreSearchAPI properties', () async {
@@ -59,13 +61,55 @@ void main() {
     expect(response, isInstanceOf<Document>());
 
     expect(PlayStoreResults.releaseNotes(response!),
-        'This is a new release of a previously available application.');
-    expect(PlayStoreResults.version(response), '1.0.6');
+        'Minor updates and improvements.');
+    expect(PlayStoreResults.version(response), '2.0.2');
+    expect(PlayStoreResults.description(response)?.length, greaterThan(10));
+  }, skip: false);
+
+  test('testing release notes <br>', () async {
+    final client = await MockPlayStoreSearchClient.setupMockClient();
+    final playStore = PlayStoreSearchAPI();
+    playStore.client = client;
+
+    final response = await playStore.lookupById('com.testing.test3');
+    expect(response, isNotNull);
+    expect(response, isInstanceOf<Document>());
+
+    expect(PlayStoreResults.releaseNotes(response!),
+        'Minor updates and improvements.\nAgain.\nAgain.');
+    expect(PlayStoreResults.version(response), '2.0.2');
+    expect(PlayStoreResults.description(response)?.length, greaterThan(10));
   }, skip: false);
 
   test('testing PlayStoreResults', () async {
     expect(PlayStoreResults(), isNotNull);
     expect(PlayStoreResults.releaseNotes(Document()), isNull);
     expect(PlayStoreResults.version(Document()), isNull);
+  }, skip: false);
+
+  /// Helper method
+  Document resDesc(String description) {
+    final html =
+        '<div class="W4P4ne">hello<div class="PHBdkd">inside<div class="DWPxHb">$description</div></div></div>';
+    return Document.html(html);
+  }
+
+  /// Helper method
+  String? pmav(Document response) {
+    final mav = PlayStoreResults.minAppVersion(response);
+    return mav?.toString();
+  }
+
+  test('testing minAppVersion', () async {
+    expect(pmav(resDesc('test [:mav: 1.2.3]')), '1.2.3');
+    expect(pmav(resDesc('test [:mav:1.2.3]')), '1.2.3');
+    expect(pmav(resDesc('test [:mav:1.2.3 ]')), '1.2.3');
+    expect(pmav(resDesc('test [:mav: 1]')), '1.0.0');
+    expect(pmav(resDesc('[:mav: 0.9.9+4]')), '0.9.9+4');
+    expect(pmav(resDesc('[:mav: 1.0.0-5.2.pre]')), '1.0.0-5.2.pre');
+    expect(pmav(Document()), isNull);
+    expect(pmav(resDesc('test')), isNull);
+    expect(pmav(resDesc('test [:mav:]')), isNull);
+    expect(pmav(resDesc('test [:mv: 1.2.3]')), isNull);
   }, skip: false);
 }
