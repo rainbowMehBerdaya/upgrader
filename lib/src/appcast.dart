@@ -354,6 +354,7 @@ class AppcastItem {
         aturKulinerUntilVersion == null ||
         aturKulinerUntilVersion!.isEmpty) {
       supported = false;
+      return supported;
     }
 
     var fromVersion = Version.parse(aturKulinerFromVersion);
