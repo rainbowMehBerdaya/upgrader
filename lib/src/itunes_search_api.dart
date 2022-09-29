@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2021 Larry Aasen. All rights reserved.
+ * Copyright (c) 2018-2022 Larry Aasen. All rights reserved.
  */
 
 import 'dart:async';
@@ -29,6 +29,7 @@ class ITunesSearchAPI {
   /// ```lookupURLByBundleId('com.google.Maps', country: 'FR');```
   Future<Map?> lookupByBundleId(String bundleId,
       {String? country = 'US', bool useCacheBuster = true}) async {
+    assert(bundleId.isNotEmpty);
     if (bundleId.isEmpty) {
       return null;
     }
@@ -177,12 +178,20 @@ class ITunesResults {
     try {
       final description = ITunesResults.description(response);
       if (description != null) {
-        const regExpSource = r'\[\:mav\:[\s]*(?<version>[^\s]+)[\s]*\]';
+        String regExpSource = r"\[\:tagName\:[\s]*(?<version>[^\s]+)[\s]*\]";
+        regExpSource = regExpSource.replaceAll(RegExp('tagName'), tagName);
         final regExp = RegExp(regExpSource, caseSensitive: false);
         final match = regExp.firstMatch(description);
         final mav = match?.namedGroup('version');
-        // Verify version string using class Version
-        version = mav != null ? Version.parse(mav) : null;
+
+        if (mav != null) {
+          try {
+            // Verify version string using class Version
+            version = Version.parse(mav);
+          } on Exception catch (e) {
+            print('upgrader: ITunesResults.minAppVersion: $tagName error: $e');
+          }
+        }
       }
     } on Exception catch (e) {
       print('upgrader.ITunesResults.minAppVersion : $e');

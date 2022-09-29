@@ -4,7 +4,6 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,38 +13,23 @@ import 'fake_appcast.dart';
 import 'mock_itunes_client.dart';
 import 'mock_play_store_client.dart';
 
+// TODO: Need an integration test that runs on Android and iOS.
+
 // Platform.operatingSystem can be "macos" or "linux" in a unit test.
 // defaultTargetPlatform is TargetPlatform.android in a unit test.
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late SharedPreferences preferences;
 
-  const sharedPrefsChannel = MethodChannel(
-    'plugins.flutter.io/shared_preferences',
-  );
-
-  const kEmptyPreferences = <String, dynamic>{};
-
   setUp(() async {
-    // This idea to mock the shared preferences taken from:
-    /// https://github.com/flutter/plugins/blob/master/packages/shared_preferences/test/shared_preferences_test.dart
-    sharedPrefsChannel.setMockMethodCallHandler((MethodCall methodCall) async {
-      if (methodCall.method == 'getAll') {
-        return kEmptyPreferences;
-      }
-      if (methodCall.method == 'clear' ||
-          methodCall.method == 'remove' ||
-          methodCall.method == 'setString') {
-        return true;
-      }
-      return null;
-    });
+    SharedPreferences.setMockInitialValues({});
     preferences = await SharedPreferences.getInstance();
-    await Upgrader.clearSavedSettings();
   });
 
   tearDown(() async {
     await preferences.clear();
+    return true;
   });
 
   testWidgets('test Upgrader sharedInstance', (WidgetTester tester) async {
@@ -821,6 +805,8 @@ void main() {
     verifyMessages(UpgraderMessages(code: 'fr'), 'fr');
     verifyMessages(UpgraderMessages(code: 'de'), 'de');
     verifyMessages(UpgraderMessages(code: 'el'), 'el');
+    verifyMessages(UpgraderMessages(code: 'he'), 'he');
+    verifyMessages(UpgraderMessages(code: 'hi'), 'hi');
     verifyMessages(UpgraderMessages(code: 'ht'), 'ht');
     verifyMessages(UpgraderMessages(code: 'hu'), 'hu');
     verifyMessages(UpgraderMessages(code: 'id'), 'id');
@@ -838,23 +824,23 @@ void main() {
     verifyMessages(UpgraderMessages(code: 'ru'), 'ru');
     verifyMessages(UpgraderMessages(code: 'sv'), 'sv');
     verifyMessages(UpgraderMessages(code: 'ta'), 'ta');
+    verifyMessages(UpgraderMessages(code: 'te'), 'te');
     verifyMessages(UpgraderMessages(code: 'tr'), 'tr');
     verifyMessages(UpgraderMessages(code: 'uk'), 'uk');
     verifyMessages(UpgraderMessages(code: 'vi'), 'vi');
+    verifyMessages(UpgraderMessages(code: 'zh'), 'zh');
   }, skip: false);
 }
 
 void verifyMessages(UpgraderMessages messages, String code) {
   expect(messages.languageCode, code);
-  expect(messages.message(UpgraderMessage.body)!.isNotEmpty, isTrue);
-  expect(
-      messages.message(UpgraderMessage.buttonTitleIgnore)!.isNotEmpty, isTrue);
-  expect(
-      messages.message(UpgraderMessage.buttonTitleLater)!.isNotEmpty, isTrue);
-  expect(
-      messages.message(UpgraderMessage.buttonTitleUpdate)!.isNotEmpty, isTrue);
-  expect(messages.message(UpgraderMessage.prompt)!.isNotEmpty, isTrue);
-  expect(messages.message(UpgraderMessage.title)!.isNotEmpty, isTrue);
+  expect(messages.message(UpgraderMessage.body), isNotEmpty);
+  expect(messages.message(UpgraderMessage.buttonTitleIgnore), isNotEmpty);
+  expect(messages.message(UpgraderMessage.buttonTitleLater), isNotEmpty);
+  expect(messages.message(UpgraderMessage.buttonTitleUpdate), isNotEmpty);
+  expect(messages.message(UpgraderMessage.prompt), isNotEmpty);
+  expect(messages.message(UpgraderMessage.releaseNotes), isNotEmpty);
+  expect(messages.message(UpgraderMessage.title), isNotEmpty);
 }
 
 class _MyWidget extends StatelessWidget {

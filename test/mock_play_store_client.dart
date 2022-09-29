@@ -12,6 +12,7 @@ final _filenames = {
   'com.kotoko.express': 'test_play_store_page1.txt',
   'com.testing.test2': 'test_play_store_page2.txt',
   'com.testing.test3': 'test_play_store_page3.txt',
+  'com.testing.test4': 'test_play_store_page4.txt',
 };
 
 // Create a MockClient using the Mock class provided by the Mockito package.
@@ -19,12 +20,17 @@ final _filenames = {
 class MockPlayStoreSearchClient {
   static Future<http.Client> setupMockClient() async {
     final client = MockClient((http.Request request) async {
-      final url = request.url.toString();
+      var url = request.url.toString();
+      final index = url.indexOf('_cb=');
+      if (index > 0) {
+        url = url.substring(0, index - 1);
+      }
       final id = request.url.queryParameters['id'];
       if (id != null) {
         final filename = _filenames[id];
         if (filename != null && filename.isNotEmpty) {
-          if (url == PlayStoreSearchAPI().lookupURLById(id)) {
+          if (url ==
+              PlayStoreSearchAPI().lookupURLById(id, useCacheBuster: false)) {
             final testPage = await getTestPage(filename);
             final contents = testPage.readAsStringSync();
             return http.Response(contents, 200, headers: {

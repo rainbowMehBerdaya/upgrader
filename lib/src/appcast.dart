@@ -47,9 +47,18 @@ class Appcast {
     items!.forEach((AppcastItem item) {
       if (item.hostSupportsItem(osVersion: osVersionString)) {
         if (item.packageInfoVersionSupportsItem(installedVersion: installedVersion)) {
-          if (bestItem == null ||
-              Version.parse(item.versionString!) > Version.parse(bestItem!.versionString!)) {
+          if (bestItem == null) {
             bestItem = item;
+          } else {
+            try {
+              final itemVersion = Version.parse(item.versionString!);
+              final bestItemVersion = Version.parse(bestItem!.versionString!);
+              if (itemVersion > bestItemVersion) {
+                bestItem = item;
+              }
+            } on Exception catch (e) {
+              print('appcast.bestItem: invalid version: $e');
+            }
           }
         }
       }
@@ -326,19 +335,27 @@ class AppcastItem {
       try {
         osVersionValue = Version.parse(osVersion);
       } catch (e) {
-        print('appcast.hostSupportsItem: invalid osVerion: $e');
+        print('appcast.hostSupportsItem: invalid osVersion: $e');
         return false;
       }
       if (maximumSystemVersion != null) {
-        final maxVersion = Version.parse(maximumSystemVersion!);
-        if (osVersionValue > maxVersion) {
-          supported = false;
+        try {
+          final maxVersion = Version.parse(maximumSystemVersion!);
+          if (osVersionValue > maxVersion) {
+            supported = false;
+          }
+        } on Exception catch (e) {
+          print('appcast.hostSupportsItem: invalid maximumSystemVersion: $e');
         }
       }
       if (supported && minimumSystemVersion != null) {
-        final minVersion = Version.parse(minimumSystemVersion!);
-        if (osVersionValue < minVersion) {
-          supported = false;
+        try {
+          final minVersion = Version.parse(minimumSystemVersion!);
+          if (osVersionValue < minVersion) {
+            supported = false;
+          }
+        } on Exception catch (e) {
+          print('appcast.hostSupportsItem: invalid minimumSystemVersion: $e');
         }
       }
     }

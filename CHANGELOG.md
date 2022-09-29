@@ -1,22 +1,90 @@
-## 4.2.0
+## [4.6.1]
 
-* Updated Play Store release notes containing <br> to use newline ('\n') instead.
+- Added new language translations for Chinese ('zh'). (thanks to @nivlaoh)
+- Added new language translations for Hebrew ('he'). (thanks to @TomerPacific)
+- Added new language translations for Hindi ('hi'). (thanks to @chirag-chopra)
+- Added new language translations for Telugu ('te'). (thanks to @moulibheemaneti)
+- Added Indonesian releaseNotes translation. (thanks to @malvinpratama)
+- Added Italian releaseNotes translation. (thanks to @JustLazzah)
+- Added Japanese releaseNotes translation. (thanks to @akirakakar)
 
-## 4.1.2
+## [4.6.0]
+
+- Updated the Android Play Store API request to include the country code, and added cache buster to break the HTTP caching.
+- Updated the device_info_plus dependency to include version 4.1.0 and up to <4.2.0.
+
+## [4.5.0]
+
+- Added German releaseNotes translation. (thanks to @LenhartStephan)
+- Fixed punctuation for French language. (thanks to @benoitkugler)
+- Added French releaseNotes translation. (thanks to @benoitkugler)
+- Added Arabic releaseNotes translation. (thanks to @AhmadAbuRjeila)
+- Fixed minor issue with the Arabic translation of the word "later". (thanks to @alhamri)
+
+## [4.4.2]
+
+- Corrected CHANGELOG issue with version [4.4.1].
+
+## [4.4.1]
+
+- Fixed launch url malfunction issue with iOS. (thanks to @samcho0608)
+
+## [4.4.0]
+
+- Updated the version package to support version ranges from >=2.0.0 <3.1.0.
+- Improved exception handling around version parsing.
+- Fixed methods ITunesResults.minAppVersion and PlayStoreResults.minAppVersion to
+handle tagName parameter properly.
+
+## [4.3.0]
+
+- Updated the device_info_plus package to support version ranges from >=3.2.0 to <4.1.0.
+- Improved the use of shared preferences in unit test.
+
+## [4.2.2]
+
+- Fixed an issue on Android when the Webview was opening instead of the Play Store.
+
+## [4.2.2-alpha.1]
+
+- Fixed an issue on Android when the Webview was opening instead of the Play Store.
+- This is a pre-release to allow for testing with a large amount of developers.
+
+## [4.2.1]
+
+- After the latest update to the Play Store, the Android app version was not being
+found on the Play Store. This has been resolved.
+- Changed the "upgrader: instantiated." message to be behind debugLogging.
+
+## [4.2.1-alpha.2]
+
+- Removed noisy exception messages that were logged during Play Store access.
+
+## [4.2.1-alpha.1]
+
+- After the latest update to the Play Store, the Android app version was not being
+found on the Play Store. This has been resolved.
+- This is a pre-release to allow for testing with a large amount of developers.
+
+## [4.2.0]
+
+- Updated Play Store release notes containing `<br>` to use newline ('\n') instead.
+
+## [4.1.2]
 
 * Fixed Flutter 3 warnings related to `WidgetsBinding.instance`.
 * Fixed a typo in the Persian body message.
 * Updated xml dependency to ">=5.0.2 <7.0.0".
 
-## 4.1.1
+## [4.1.1]
 
 * Fixed error from pub.dev because it used Flutter 2.10.5: "The property 'window' can't be unconditionally accessed because the receiver can be 'null'."
 
-## 4.1.0
+## [4.1.0]
 
 * Minor updates after upgrading Flutter to 3.0.0 and Dart to 2.17.0.
 
-## 4.0.0
+## [4.0.0]
 
 * [BREAKING] No more singleton. This is a huge update to remove the use of a singleton for Upgrader.
 It is now a normal class that is passed to either UpgradeAlert or UpgradeCard.

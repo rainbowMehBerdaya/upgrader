@@ -20,6 +20,17 @@ the upgrade sooner. Also, with Flutter supporting more than just Android and iOS
 future, it will become more likely that users on other app stores need to be nagged about
 upgrading.
 
+### Platform Support
+
+| Platform | Automatically Supported? | Appcast Supported? |
+| --- | --- | --- |
+| ANDROID | &#9989; Yes | &#9989; Yes |
+| IOS | &#9989; Yes | &#9989; Yes |
+| LINUX | &#10060; No | &#9989; Yes |
+| MACOS | &#10060; No | &#9989; Yes |
+| WEB | &#10060; No | &#9989; Yes |
+| WINDOWS | &#10060; No | &#9989; Yes |
+
 ### UI
 The UI comes in two flavors: alert or card. The [UpgradeAlert](#alert-example) class is used to display the
 popup alert prompt, and the [UpgradeCard](#card-example) class is used to display the inline material design card.
@@ -33,23 +44,6 @@ the release notes are taken from the the WHAT'S NEW section on Google Play when
 available, otherwise the main app description is used.
 On iOS the release notes are taken from the App Store What's New section.
 For [appcast](#appcast)), the release notes are taken from the description field.
-
-### Minimum App Version
-The `upgrader` package can use a forced upgrade version (minimum app version)
-simply by adding that 
-version number to the description field in the app stores. Use this format:
-```
-[:mav: 1.2.3]
-```
-
-Using that text says that the minimum app version is 1.2.3 and that earlier
-versions of this app will be forced to update to the current version.
-
-After the app containing this text has been submitted for review, approved, and
-released on the app store, the version number will be visible to the upgrader
-package. When the minimum app version is updated in the future, all previously
-installed apps with this package (version 3.9.0+) will recognize and honor
-that value.
 
 #### Android
 Add this text to the bottom of the full description field in the Google Play
@@ -125,7 +119,7 @@ The Upgrader class can be customized by setting parameters in the constructor.
 * appcast: Provide an Appcast that can be replaced for mock testing, defaults to ```null```
 * appcastConfig: the appcast configuration, defaults to ```null```
 * canDismissDialog: can alert dialog be dismissed on tap outside of the alert dialog, which defaults to ```false``` (not used by UpgradeCard)
-* countryCode: the country code that will override the system locale, which defaults to ```null``` (iOS only)
+* countryCode: the country code that will override the system locale, which defaults to ```null```
 * client: an HTTP Client that can be replaced for mock testing, defaults to ```null```
 * debugDisplayAlways: always force the upgrade to be available, defaults to ```false```
 * debugDisplayOnce: display the upgrade at least once once, defaults to ```false```
@@ -145,6 +139,25 @@ The Upgrader class can be customized by setting parameters in the constructor.
 * willDisplayUpgrade: called when ```upgrader``` determines that an upgrade may
 or may not be displayed, defaults to ```null```
 
+### Minimum App Version
+The `upgrader` package can use a forced upgrade version (minimum app version)
+simply by adding that 
+version number to the description field in the app stores. Use this format:
+```
+[:mav: 1.2.3]
+```
+
+Using that text says that the minimum app version is 1.2.3 and that earlier
+versions of this app will be forced to update to the current version.
+
+After the app containing this text has been submitted for review, approved, and
+released on the app store, the version number will be visible to the upgrader
+package. When the minimum app version is updated in the future, all previously
+installed apps with this package (version 3.9.0+) will recognize and honor
+that value.
+
+This overrides any value supplied in the `minAppVersion` parameter.
+
 ## Android Back Button
 
 When using the ```UpgradeAlert``` widget, the Android back button will not
@@ -154,12 +167,14 @@ dialog, use ```shouldPopScope``` and return true like this:
 UpgradeAlert(Upgrader(shouldPopScope: () => true));
 ```
 
-## iOS Country Code
+## Country Code
 
-When your app is not in the iOS `US` App Store, which is the default, you must use
+On iOS, when your app is _not_ in the `US` App Store, which is the default, you must use
 the `countryCode` parameter mentioned above. The `upgrader` package does not know
-which country app store to use because it is not provided by Apple. It assumes
+which country app store to use because it is not provided by iOS. It assumes
 the app is in the `US` App Store.
+
+On Android, the `upgrader` package uses the system locale to determine the country code.
 
 ## Limitations
 These widgets work on both Android and iOS. When running on Android the Google
@@ -265,19 +280,22 @@ UpgradeAlert(Upgrader(messages: MyUpgraderMessages()));
 
 ## Language localization
 
-The strings displayed in `upgrader` are already localized in 29 languages. New languages will be
+The strings displayed in `upgrader` are already localized in 33 languages. New languages will be
 supported in the future with minor updates.
 
 Languages supported:
 * English ('en')
 * Arabic ('ar')
 * Bengali ('bn')
+* Chinese ('zh')
 * Dutch ('nl')
 * Filipino ('fil')
 * French ('fr')
 * German ('de')
 * Greek ('el')
 * Haitian Creole ('ht')
+* Hebrew ('he')
+* Hindi ('hi')
 * Hungarian ('hu')
 * Indonesian ('id')
 * Italian ('it')
@@ -295,6 +313,7 @@ Languages supported:
 * Spanish ('es')
 * Swedish ('sv')
 * Tamil ('ta')
+* Telugu ('te')
 * Turkish ('tr')
 * Ukrainian ('uk')
 * Vietnamese ('vi')
@@ -377,6 +396,7 @@ resultsFuture.then((results) {
 There is a command line app used to display the results from Google Play Store. The code is located in
 bin/playstore_lookup.dart, and can be run from the command line like this:
 ```
+$ cd bin
 $ dart playstore_lookup.dart id=com.google.android.apps.mapslite
 ```
 Results:

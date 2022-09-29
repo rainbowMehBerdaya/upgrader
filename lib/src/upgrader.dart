@@ -172,7 +172,7 @@ class Upgrader {
   })  : client = client ?? http.Client(),
         messages = messages ?? UpgraderMessages(),
         platform = platform ?? defaultTargetPlatform {
-    print("upgrader: instantiated."); // TODO: remove this!
+    if (debugLogging) print("upgrader: instantiated.");
   }
 
   /// A shared instance of [Upgrader].
@@ -282,7 +282,7 @@ class Upgrader {
       // Get Android version from Google Play Store, or
       // get iOS version from iTunes Store.
       if (platform == TargetPlatform.android) {
-        await _getAndroidStoreVersion();
+        await _getAndroidStoreVersion(country: country);
       } else if (platform == TargetPlatform.iOS) {
         final iTunes = ITunesSearchAPI();
         iTunes.client = client;
@@ -296,7 +296,9 @@ class Upgrader {
           final mav = ITunesResults.minAppVersion(response);
           if (mav != null) {
             minAppVersion = mav.toString();
-            print('upgrader: ITunesResults.minAppVersion: $minAppVersion');
+            if (debugLogging) {
+              print('upgrader: ITunesResults.minAppVersion: $minAppVersion');
+            }
           }
         }
       }
@@ -306,11 +308,10 @@ class Upgrader {
   }
 
   /// Android info is fetched by parsing the html of the app store page.
-  Future<bool?> _getAndroidStoreVersion() async {
+  Future<bool?> _getAndroidStoreVersion({String? country}) async {
     final id = _packageInfo!.packageName;
-    final playStore = PlayStoreSearchAPI();
-    playStore.client = client;
-    final response = await (playStore.lookupById(id));
+    final playStore = PlayStoreSearchAPI(client: client);
+    final response = await (playStore.lookupById(id, country: country));
     if (response != null) {
       _appStoreVersion ??= PlayStoreResults.version(response);
       _appStoreListingURL ??= playStore.lookupURLById(id);
@@ -318,7 +319,9 @@ class Upgrader {
       final mav = PlayStoreResults.minAppVersion(response);
       if (mav != null) {
         minAppVersion = mav.toString();
-        print('upgrader: PlayStoreResults.minAppVersion: $minAppVersion');
+        if (debugLogging) {
+          print('upgrader: PlayStoreResults.minAppVersion: $minAppVersion');
+        }
       }
     }
 
@@ -478,23 +481,24 @@ class Upgrader {
       print('upgrader: minAppVersion: $minAppVersion');
     }
     if (_appStoreVersion == null || _installedVersion == null) {
-      if (debugLogging) {
-        print('upgrader: isUpdateAvailable: false');
-      }
+      if (debugLogging) print('upgrader: isUpdateAvailable: false');
       return false;
     }
 
     if (_updateAvailable == null) {
-      final appStoreVersion = Version.parse(_appStoreVersion!);
-      final installedVersion = Version.parse(_installedVersion!);
+      try {
+        final appStoreVersion = Version.parse(_appStoreVersion!);
+        final installedVersion = Version.parse(_installedVersion!);
 
-      final available = appStoreVersion > installedVersion;
-      _updateAvailable = available ? _appStoreVersion : null;
+        final available = appStoreVersion > installedVersion;
+        _updateAvailable = available ? _appStoreVersion : null;
+      } on Exception catch (e) {
+        print('upgrader: isUpdateAvailable: $e');
+      }
     }
-    if (debugLogging) {
-      print('upgrader: isUpdateAvailable: ${_updateAvailable != null}');
-    }
-    return _updateAvailable != null;
+    final isAvailable = _updateAvailable != null;
+    if (debugLogging) print('upgrader: isUpdateAvailable: $isAvailable');
+    return isAvailable;
   }
 
   bool shouldDisplayReleaseNotes() {
@@ -748,7 +752,7 @@ class Upgrader {
     await prefs.setString('lastTimeAlerted', _lastTimeAlerted.toString());
 
     _lastVersionAlerted = _appStoreVersion;
-    await prefs.setString('lastVersionAlerted', _lastVersionAlerted!);
+    await prefs.setString('lastVersionAlerted', _lastVersionAlerted ?? '');
 
     _hasAlerted = true;
     return true;
@@ -782,7 +786,10 @@ class Upgrader {
 
     if (await canLaunchUrl(Uri.parse(_appStoreListingURL!))) {
       try {
-        await launchUrl(Uri.parse(_appStoreListingURL!));
+        await launchUrl(Uri.parse(_appStoreListingURL!),
+            mode: UpgradeIO.isAndroid
+                ? LaunchMode.externalNonBrowserApplication
+                : LaunchMode.platformDefault);
       } catch (e) {
         if (debugLogging) {
           print('upgrader: launch to app store failed: $e');
