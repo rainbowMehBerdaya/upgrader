@@ -374,8 +374,8 @@ class AppcastItem {
       return supported;
     }
 
-    var fromVersion = Version.parse(aturKulinerFromVersion);
-    var untilVersion = Version.parse(aturKulinerUntilVersion);
+    var fromVersion = Version.parse(aturKulinerFromVersion!);
+    var untilVersion = Version.parse(aturKulinerUntilVersion!);
     var installedVersionParse = Version.parse(installedVersion);
 
     if (installedVersionParse >= fromVersion && installedVersionParse <= untilVersion) {

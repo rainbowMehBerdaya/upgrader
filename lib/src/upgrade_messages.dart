@@ -709,7 +709,7 @@ class UpgraderMessages {
     String message;
     switch (languageCode) {
       case 'aturKuliner':
-        message = 'Tolak';
+        message = 'Catatan Rilis';
         break;
       case 'ar':
         message = 'تفاصيل الاصدار';
