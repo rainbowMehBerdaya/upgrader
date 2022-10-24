@@ -1,6 +1,23 @@
-## [Unreleased]
+## [4.9.0]
 
-Updated the Play Store API request to include the language code
+- Expanded dependency version ranges without breaking compatibility. More dependency
+updates coming in the next update.
+- Updated package dependencies:
+    - device_info_plus to ">=3.2.0 <6.0.0"
+    - http to ">=0.13.0 <=0.13.3"
+    - os_detect to ">=2.0.0 <2.1.0"
+    - package_info_plus to ">=1.3.0 <=1.4.2"
+    - shared_preferences to ">=2.0.3 <=2.0.7"
+- Updated example to use Dart >=2.12.0.
+
+## [4.8.1]
+
+- Fixed Android locale language code in lookupURLById. Thanks to [@humanolaranja](https://github.com/humanolaranja) for this update.
+
+## [4.8.0]
+
+- Release notes for the Android Play Store now display in device locale language code. Updated the Play Store API request to include the language code. Thanks to [@humanolaranja](https://github.com/humanolaranja) for this update.
+
 ## [4.7.0]
 
 - Changed the Android Play Store description minimum app version tag from `[:mav: 1.2.3]`, which is not allowed by Google,
