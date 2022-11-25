@@ -660,7 +660,7 @@ void main() {
 
       final upgrader2 =
           Upgrader(durationUntilAlertAgain: const Duration(days: 10));
-      final _ = UpgradeCard(upgrader: upgrader2);
+      UpgradeCard(upgrader: upgrader2);
       expect(upgrader2.durationUntilAlertAgain, const Duration(days: 10));
     }, skip: false);
 
@@ -804,6 +804,7 @@ void main() {
     verifyMessages(UpgraderMessages(code: 'en'), 'en');
     verifyMessages(UpgraderMessages(code: 'ar'), 'ar');
     verifyMessages(UpgraderMessages(code: 'bn'), 'bn');
+    verifyMessages(UpgraderMessages(code: 'da'), 'da');
     verifyMessages(UpgraderMessages(code: 'es'), 'es');
     verifyMessages(UpgraderMessages(code: 'fa'), 'fa');
     verifyMessages(UpgraderMessages(code: 'fil'), 'fil');

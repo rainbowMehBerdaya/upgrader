@@ -1,3 +1,37 @@
+## [5.0.0]
+
+- Updated to Flutter 3.0.1 and Dart 2.17.1.
+- Updated all package dependencies to their latest version.
+- Fixed a few warnings.
+
+## [5.0.0-alpha.1]
+
+- Updated to Flutter 3.0.1 and Dart 2.17.1.
+- Updated all package dependencies to their latest version.
+- Fixed a few warnings.
+
+## [4.11.1]
+
+- Fixed issue #236 where the 'he' body message was missing a `}` character.
+
+## [4.11.0]
+
+- Updated package dependencies:
+    - mockito to ">=5.0.0 <5.4.0"
+- Added new language translations for Danish ('da'). (thanks to @Ruukas97)
+- Updated README to include a screenshot of a minAppVersion example.
+
+## [4.10.0]
+
+- Updated minimum Flutter version to 2.5.0 and Dart to 2.14.0.
+- Updated package dependencies:
+    - device_info_plus to ">=3.2.0 <7.0.0"
+    - html to ">=0.15.0 <=0.15.1"
+    - http to ">=0.13.0 <=0.13.5"
+    - package_info_plus to ">=1.3.0 <3.0.0"
+    - shared_preferences to ">=2.0.3 <2.1.0"
+    - url_launcher to ">=6.1.0 <= 6.1.5"
+
 ## [4.9.0]
 
 - Expanded dependency version ranges without breaking compatibility. More dependency

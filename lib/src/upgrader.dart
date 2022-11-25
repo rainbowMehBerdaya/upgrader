@@ -50,7 +50,7 @@ class AppcastConfiguration {
 }
 
 /// Creates a shared instance of [Upgrader].
-late Upgrader _sharedInstance = Upgrader();
+Upgrader _sharedInstance = Upgrader();
 
 /// A class to configure the upgrade dialog.
 class Upgrader {
@@ -616,7 +616,7 @@ class Upgrader {
           ));
     }
     return AlertDialog(
-      title: Text(title),
+      title: Text(title, key: const Key('upgrader.dialog.title')),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

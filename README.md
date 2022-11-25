@@ -40,11 +40,6 @@ popup alert prompt, and the [UpgradeCard](#card-example) widget is used to displ
 
 Just wrap your body widget in the `UpgradeAlert` widget, and it will handle the rest.
 ```dart
-import 'package:flutter/material.dart';
-import 'package:upgrader/upgrader.dart';
-
-void main() => runApp(MyApp());
-
 class MyApp extends StatelessWidget {
   const MyApp({Key key}) : super(key: key);
 
@@ -52,11 +47,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Upgrader Example',
-      home: Scaffold(
-          appBar: AppBar(title: Text('Upgrader Example')),
-          body: UpgradeAlert(
-            child: Center(child: Text('Checking...')),
-          )),
+      home: UpgradeAlert(
+          child: Scaffold(
+        appBar: AppBar(title: Text('Upgrader Example')),
+        body: Center(child: Text('Checking...')),
+      )),
     );
   }
 }
@@ -148,7 +143,11 @@ For the iOS App Store, use this format:
 ```
 
 Using that text says that the minimum app version is 1.2.3 and that earlier
-versions of this app will be forced to update to the current version.
+versions of this app will be forced to update to the current version. The Ignore
+and Later buttons will automatically be hidden.
+
+![image](screenshots/example-minappversion.png)
+
 
 After the app containing this text has been submitted for review, approved, and
 released on the app store, the version number will be visible to the `upgrader`
@@ -291,7 +290,7 @@ UpgradeAlert(Upgrader(messages: MyUpgraderMessages()));
 
 ## Language localization
 
-The strings displayed in `upgrader` are already localized in 33 languages. New languages will be
+The strings displayed in `upgrader` are already localized in 34 languages. New languages will be
 supported in the future with minor updates.
 
 Languages supported:
@@ -299,6 +298,7 @@ Languages supported:
 * Arabic ('ar')
 * Bengali ('bn')
 * Chinese ('zh')
+* Danish ('da')
 * Dutch ('nl')
 * Filipino ('fil')
 * French ('fr')
@@ -439,7 +439,10 @@ itunes_lookup all results:
 ## Reporting Issues
 
 Please submit issue reports [here on GitHub](https://github.com/larryaasen/upgrader/issues/new/choose).
-To better assist in analyzing issues, please include all of the `upgrader` log, which should look something like this:
+To better assist in analyzing issues, please include all of the `upgrader` log,
+which can be enabled by setting `debugLogging` to `true`.
+
+It should look something like this:
 ```
 flutter: upgrader: languageCode: en
 flutter: upgrader: build UpgradeAlert
@@ -490,3 +493,5 @@ Please sponsor or donate to the creator of `upgrader` on [Flattr](https://flattr
 [![Codemagic](https://api.codemagic.io/apps/5ffb7888eb8402dcd1928753/flutter-package/status_badge.svg)](https://codemagic.io/apps/5ffb7888eb8402dcd1928753/flutter-package/latest_build)
 
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/larryaasen/upgrader/tree/master.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/larryaasen/upgrader/tree/master)
+
+[![GitHub main workflow](https://github.com/larryaasen/upgrader/actions/workflows/main.yml/badge.svg)](https://github.com/larryaasen/upgrader/actions/workflows/main.yml)

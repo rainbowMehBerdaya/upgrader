@@ -118,6 +118,10 @@ class UpgraderMessages {
         message =
             '{{appName}} এর একটি নতুন সংস্করণ {{currentAppStoreVersion}} পাওয়া যাচ্ছে। আপনার অ্যাপলিকেশনের সংস্করণ হচ্ছে {{currentInstalledVersion}}।';
         break;
+      case 'da':
+        message =
+            'En ny version af {{appName}} er tilgængelig! Version {{currentAppStoreVersion}} er nu tilgængelig - du har {{currentInstalledVersion}}.';
+        break;
       case 'el':
         message =
             'Μια νέα έκδοση του {{appName}} είναι διαθέσιμη! Η έκδοση {{currentAppStoreVersion}} είναι διαθέσιμη-έχετε την {{currentInstalledVersion}}.';
@@ -144,7 +148,7 @@ class UpgraderMessages {
         break;
       case 'he':
         message =
-            'גרסה חדשה של {{appName}} קיימת! גרסה {{currentAppStoreVersion}} ניתנת להורדה-יש לך גרסה {{currentInstalledVersion}.';
+            'גרסה חדשה של {{appName}} קיימת! גרסה {{currentAppStoreVersion}} ניתנת להורדה-יש לך גרסה {{currentInstalledVersion}}.';
         break;
       case 'hi':
         message =
@@ -262,6 +266,9 @@ class UpgraderMessages {
       case 'bn':
         message = 'বাতিল';
         break;
+      case 'da':
+        message = 'IGNORER';
+        break;
       case 'el':
         message = 'ΑΓΝΟΗΣTΕ';
         break;
@@ -378,6 +385,9 @@ class UpgraderMessages {
       case 'bn':
         message = 'পরে';
         break;
+      case 'da':
+        message = 'SENERE';
+        break;
       case 'el':
         message = 'ΑΡΓΟΤΕΡΑ';
         break;
@@ -490,6 +500,9 @@ class UpgraderMessages {
         break;
       case 'bn':
         message = 'এখন আপডেট করুন';
+        break;
+      case 'da':
+        message = 'OPDATER NU';
         break;
       case 'el':
         message = 'ΕΝΗΜΕΡΩΣΗ';
@@ -604,6 +617,9 @@ class UpgraderMessages {
       case 'bn':
         message = 'আপনি কি এখনই এটি আপডেট করতে চান?';
         break;
+      case 'da':
+        message = 'Vil du opdatere nu?';
+        break;
       case 'el':
         message = 'Θέλετε να κάνετε την ενημέρωση τώρα;';
         break;
@@ -714,6 +730,9 @@ class UpgraderMessages {
       case 'ar':
         message = 'تفاصيل الاصدار';
         break;
+      case 'da':
+        message = 'Udgivelsesnoter';
+        break;
       case 'de':
         message = 'Versionshinweise';
         break;
@@ -786,6 +805,9 @@ class UpgraderMessages {
         break;
       case 'bn':
         message = 'আপডেট অ্যাপ্লিকেশন?';
+        break;
+      case 'da':
+        message = 'Opdater App?';
         break;
       case 'el':
         message = 'Ενημέρωση εφαρμογής;';
