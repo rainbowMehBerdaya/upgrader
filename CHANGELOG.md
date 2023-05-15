@@ -1,3 +1,26 @@
+## 7.0.0
+
+### BREAKING CHANGES
+
+- New minimum requirements: Dart 3.0.0 and Flutter 3.10.0.
+- Updated code to avoid deprecated warnings.
+- Updated many of the package dependencies.
+
+## 6.5.0
+
+- Fixed a few null String objects causing exceptions. #284
+- Updated package_info_plus version to '>=3.0.1 <5.0.0'.
+
+## 6.4.0
+
+- Updated device_info_plus version to '>=7.0.0 <10.0.0'.
+
+## 6.3.0
+
+- Improved support for Appcast on macOS. Thanks to [@ahmet-fennel](https://github.com/ahmet-fennel) for this update.
+- Added macOS example using Appcast.
+- Downgraded the device_info_plus minimum version to 7.0.0 (from 8.0.0).
+
 ## 6.2.0
 
 - Added a parameter for the Cupertino button text style. Thanks to [@daniel-possienke](https://github.com/daniel-possienke) for this update.

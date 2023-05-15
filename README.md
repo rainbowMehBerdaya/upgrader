@@ -14,12 +14,13 @@ A Flutter package for prompting users to upgrade when there is a newer version o
 ## Overview 
 
 When a newer app version is available in the app store, a simple alert prompt or card is
-displayed. With today's modern app stores, there is little need to persuade users to upgrade
-because most are already using the auto upgrade feature. However, there may be times when
+displayed.
+
+With today's modern app stores, there is little need to persuade users to upgrade
+their apps because most are already using the auto upgrade feature. However, there may be times when
 an app needs to be updated more quickly than usual, and nagging a user to upgrade will entice
-the upgrade sooner. Also, with Flutter supporting more than just Android and iOS platforms in the
-future, it will become more likely that users on other app stores need to be nagged about
-upgrading.
+the upgrade sooner. Also, with Flutter supporting more than just Android and iOS platforms, it
+will become more likely that users on other app stores need to be nagged about upgrading.
 
 ### Platform Support
 
@@ -121,7 +122,7 @@ The Upgrader class can be customized by setting parameters in the constructor.
 * onIgnore: called when the ignore button is tapped, defaults to ```null```
 * onLater: called when the later button is tapped, defaults to ```null```
 * onUpdate: called when the update button is tapped, defaults to ```null```
-* platform: The target platform, defaults to ```defaultTargetPlatform```
+* platform: The [TargetPlatform] that identifies the platform on which the package is currently executing. Defaults to [defaultTargetPlatform]. Note that [TargetPlatform] does not include web, but includes mobile and desktop. This parameter is normally used to change the target platform during testing.
 * shouldPopScope: called when the back button is tapped, defaults to ```null```
 * showIgnore: hide or show Ignore button, which defaults to ```true```
 * showLater: hide or show Later button, which defaults to ```true```
