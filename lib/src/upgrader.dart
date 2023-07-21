@@ -314,6 +314,10 @@ class Upgrader with WidgetsBindingObserver {
         var count = appcast.items == null ? 0 : appcast.items!.length;
         print('upgrader: appcast item count: $count');
       }
+
+      // SOMETHING NOT MAKING LOGIC
+      // JIKA ADA CRITICAL UPDATE VERSI LEBIH BARU, TAPI TIDAK COCOK DGN VERSION CODE
+      // TAPI VARIABLE CRITICALVERSION-NYA DI PAKE DI BEST ITEM, DIMANA SEHARUSNYA TIDAK BOLEH
       final criticalUpdateItem = appcast.bestCriticalItem();
       final criticalVersion = criticalUpdateItem?.versionString ?? '';
 
@@ -427,7 +431,8 @@ class Upgrader with WidgetsBindingObserver {
     // When there are no supported OSes listed, they are all supported.
     var supported = true;
     if (appcastConfig!.supportedOS != null) {
-      supported = appcastConfig!.supportedOS!.contains(_operatingSystem);
+      supported =
+          appcastConfig!.supportedOS!.contains(upgraderOS.operatingSystem);
     }
     return supported;
   }
