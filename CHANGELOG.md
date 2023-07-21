@@ -1,3 +1,46 @@
+## 8.0.0
+
+- Added support for checking for updates every time the app resumes from the background. (#272)
+- Changed the way Upgrader is initialized to support a stream of evaluation requests. The
+stream is updated each time the app resumes from the background.
+- Added Russian release notes translation. (thanks to @filipp2911)
+
+## 8.0.0-alpha.2
+
+- Fixed an issue with checking for updates after resuming from background.
+
+## 8.0.0-alpha.1
+
+- Added support for checking for updates every time the app resumes from the background. (#272)
+- Changed the way Upgrader is initialized to support a stream of evaluation requests. The
+stream is updated each time the app resumes from the background.
+- Added Russian release notes translation. (thanks to @filipp2911)
+
+## 7.1.0
+
+- Added support for GoRouter. See the README for more details.
+- Improved platform support and testing of Appcast for different platforms.
+- Created class UpgraderDevice (and mock) to abstract the device_info details which is used for the OS version.
+
+## 7.1.0-alpha.2
+
+- Added support for GoRouter. See the README for more details.
+
+## 7.1.0-alpha.1
+
+- Improved platform support and testing of Appcast for different platforms.
+- Created class UpgraderDevice (and mock) to abstract the device_info details which is used for the OS version.
+
+## 7.0.2
+
+- Updated dependency for http to '>=0.13.6 <2.0.0'.
+- Added Turkish release notes translation.
+
+## 7.0.1
+
+- Updated dependencies device_info_plus to ^9.0.1 and package_info_plus to ^4.0.1.
+- Fixed release notes scrolling issue for Cupertino style dialogs. (#287)
+
 ## 7.0.0
 
 ### BREAKING CHANGES
@@ -285,7 +328,7 @@ be displayed. One good use for this callback is logging metrics for your app.
 ## 3.12.1
 
 * Removed the use of dart:io from the package to allow for compatibility on web.
-Added use of pacakge os_detect instead. Testing still uses dart:io.
+Added use of package os_detect instead. Testing still uses dart:io.
 
 ## 3.12.0
 

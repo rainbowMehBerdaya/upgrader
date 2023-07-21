@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2018-2022 Larry Aasen. All rights reserved.
+ * Copyright (c) 2018-2023 Larry Aasen. All rights reserved.
  */
 
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
@@ -16,7 +16,7 @@ import 'package:version/version.dart';
 import 'appcast.dart';
 import 'itunes_search_api.dart';
 import 'play_store_search_api.dart';
-import 'upgrade_io.dart';
+import 'upgrade_os.dart';
 import 'upgrade_messages.dart';
 
 /// Signature of callbacks that have no arguments and return bool.
@@ -33,12 +33,15 @@ typedef WillDisplayUpgradeCallback = void Function(
     String? installedVersion,
     String? appStoreVersion});
 
+/// The type of data in the stream.
+typedef UpgraderEvaluateNeed = bool;
+
 /// There are two different dialog styles: Cupertino and Material
 enum UpgradeDialogStyle { cupertino, material }
 
 /// A class to define the configuration for the appcast. The configuration
 /// contains two parts: a URL to the appcast, and a list of supported OS
-/// names, such as "android", "ios".
+/// names, such as "android", "fuchsia", "ios", "linux" "macos", "web", "windows".
 class AppcastConfiguration {
   final List<String>? supportedOS;
   final String? url;
@@ -53,7 +56,7 @@ class AppcastConfiguration {
 Upgrader _sharedInstance = Upgrader();
 
 /// A class to configure the upgrade dialog.
-class Upgrader {
+class Upgrader with WidgetsBindingObserver {
   /// Provide an Appcast that can be replaced for mock testing.
   final Appcast? appcast;
 
@@ -107,12 +110,6 @@ class Upgrader {
   /// Return false when the default behavior should not execute.
   BoolCallback? onUpdate;
 
-  /// The [TargetPlatform] that identifies the platform on which the package is
-  /// currently executing. Defaults to [defaultTargetPlatform]. Note that
-  /// [TargetPlatform] does not include web, but includes mobile and desktop.
-  /// This parameter is normally used to change the target platform during testing.
-  final TargetPlatform platform;
-
   /// Called when the user taps outside of the dialog and [canDismissDialog]
   /// is false. Also called when the back button is pressed. Return true for
   /// the screen to be popped. Not used by [UpgradeCard].
@@ -137,8 +134,8 @@ class Upgrader {
   /// is logging metrics for your app.
   WillDisplayUpgradeCallback? willDisplayUpgrade;
 
-  /// The target operating system.
-  final String _operatingSystem = UpgradeIO.operatingSystem;
+  /// Provides information on which OS this code is running on.
+  final UpgraderOS upgraderOS;
 
   bool _displayed = false;
   bool _initCalled = false;
@@ -157,6 +154,11 @@ class Upgrader {
 
   /// Track the initialization future so that [initialize] can be called multiple times.
   Future<bool>? _futureInit;
+
+  /// A stream that provides a series of values each time an evaluation should be performed.
+  /// The values will always be null or true.
+  final _streamController = StreamController<UpgraderEvaluateNeed>();
+  Stream<UpgraderEvaluateNeed> get evaluationStream => _streamController.stream;
 
   final notInitializedExceptionMessage = 'initialize() not called. Must be called first.';
 
@@ -183,10 +185,10 @@ class Upgrader {
     this.minAppVersion,
     this.dialogStyle = UpgradeDialogStyle.material,
     this.cupertinoButtonTextStyle,
-    TargetPlatform? platform,
+    UpgraderOS? upgraderOS,
   })  : client = client ?? http.Client(),
         messages = messages ?? UpgraderMessages(),
-        platform = platform ?? defaultTargetPlatform {
+        upgraderOS = upgraderOS ?? UpgraderOS() {
     if (debugLogging) print("upgrader: instantiated.");
   }
 
@@ -241,18 +243,16 @@ class Upgrader {
 
       if (debugLogging) {
         print('upgrader: default operatingSystem: '
-            '${UpgradeIO.operatingSystem} ${UpgradeIO.operatingSystemVersion}');
-        print('upgrader: operatingSystem: $_operatingSystem');
-        print('upgrader: platform: $platform');
-        print('upgrader: defaultTargetPlatform: $defaultTargetPlatform');
+            '${upgraderOS.operatingSystem} ${upgraderOS.operatingSystemVersion}');
+        print('upgrader: operatingSystem: ${upgraderOS.operatingSystem}');
         print('upgrader: '
-            'isAndroid: ${UpgradeIO.isAndroid}, '
-            'isIOS: ${UpgradeIO.isIOS}, '
-            'isLinux: ${UpgradeIO.isLinux}, '
-            'isMacOS: ${UpgradeIO.isMacOS}, '
-            'isWindows: ${UpgradeIO.isWindows}, '
-            'isFuchsia: ${UpgradeIO.isFuchsia}, '
-            'isWeb: ${UpgradeIO.isWeb}');
+            'isAndroid: ${upgraderOS.isAndroid}, '
+            'isIOS: ${upgraderOS.isIOS}, '
+            'isLinux: ${upgraderOS.isLinux}, '
+            'isMacOS: ${upgraderOS.isMacOS}, '
+            'isWindows: ${upgraderOS.isWindows}, '
+            'isFuchsia: ${upgraderOS.isFuchsia}, '
+            'isWeb: ${upgraderOS.isWeb}');
       }
 
       if (_packageInfo == null) {
@@ -268,9 +268,37 @@ class Upgrader {
 
       await _updateVersionInfo();
 
+      // Add an observer of application events.
+      WidgetsBinding.instance.addObserver(this);
+
+      /// Trigger the stream to indicate an evaluation should be performed.
+      /// The value will always be true.
+      _streamController.add(true);
+
       return true;
     });
     return _futureInit!;
+  }
+
+  /// Remove any resources allocated.
+  void dispose() {
+    // Remove the observer of application events.
+    WidgetsBinding.instance.removeObserver(this);
+  }
+
+  /// Handle application events.
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+
+    // When app has resumed from background.
+    if (state == AppLifecycleState.resumed) {
+      await _updateVersionInfo();
+
+      /// Trigger the stream to indicate another evaluation should be performed.
+      /// The value will always be true.
+      _streamController.add(true);
+    }
   }
 
   Future<bool> _updateVersionInfo() async {
@@ -288,6 +316,7 @@ class Upgrader {
       }
       final criticalUpdateItem = appcast.bestCriticalItem();
       final criticalVersion = criticalUpdateItem?.versionString ?? '';
+
       final bestItem = appcast.bestItem(installedVersion: _packageInfo!.version);
       if (bestItem != null &&
           bestItem.versionString != null &&
@@ -310,8 +339,8 @@ class Upgrader {
           _isCriticalUpdate = false;
         }
 
-        _appStoreVersion ??= bestItem.versionString;
-        _appStoreListingURL ??= bestItem.fileURL;
+        _appStoreVersion = bestItem.versionString;
+        _appStoreListingURL = bestItem.fileURL;
         if (bestItem.isCriticalUpdate) {
           _isCriticalUpdate = true;
         }
@@ -336,9 +365,9 @@ class Upgrader {
 
       // Get Android version from Google Play Store, or
       // get iOS version from iTunes Store.
-      if (platform == TargetPlatform.android) {
+      if (upgraderOS.isAndroid) {
         await _getAndroidStoreVersion(country: country, language: language);
-      } else if (platform == TargetPlatform.iOS) {
+      } else if (upgraderOS.isIOS) {
         final iTunes = ITunesSearchAPI();
         iTunes.debugEnabled = debugLogging;
         iTunes.client = client;
@@ -346,8 +375,8 @@ class Upgrader {
             await (iTunes.lookupByBundleId(_packageInfo!.packageName, country: country));
 
         if (response != null) {
-          _appStoreVersion ??= ITunesResults.version(response);
-          _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
+          _appStoreVersion = ITunesResults.version(response);
+          _appStoreListingURL = ITunesResults.trackViewUrl(response);
           _releaseNotes ??= ITunesResults.releaseNotes(response);
           final mav = ITunesResults.minAppVersion(response);
           if (mav != null) {
@@ -545,16 +574,14 @@ class Upgrader {
       return false;
     }
 
-    if (_updateAvailable == null) {
-      try {
-        final appStoreVersion = Version.parse(_appStoreVersion!);
-        final installedVersion = Version.parse(_installedVersion!);
+    try {
+      final appStoreVersion = Version.parse(_appStoreVersion!);
+      final installedVersion = Version.parse(_installedVersion!);
 
-        final available = appStoreVersion > installedVersion;
-        _updateAvailable = available ? _appStoreVersion : null;
-      } on Exception catch (e) {
-        print('upgrader: isUpdateAvailable: $e');
-      }
+      final available = appStoreVersion > installedVersion;
+      _updateAvailable = available ? _appStoreVersion : null;
+    } on Exception catch (e) {
+      print('upgrader: isUpdateAvailable: $e');
     }
     final isAvailable = _updateAvailable != null;
     if (debugLogging) print('upgrader: isUpdateAvailable: $isAvailable');
@@ -615,12 +642,9 @@ class Upgrader {
       context: context,
       builder: (BuildContext context) {
         return WillPopScope(
-          onWillPop: () async => _shouldPopScope(),
-          child: dialogStyle == UpgradeDialogStyle.material
-              ? _alertDialog(title ?? '', message, releaseNotes, context)
-              : _cupertinoAlertDialog(
-                  title ?? '', message, releaseNotes, context),
-        );
+            onWillPop: () async => _shouldPopScope(),
+            child: _alertDialog(title ?? '', message, releaseNotes, context,
+                dialogStyle == UpgradeDialogStyle.cupertino));
       },
     );
   }
@@ -643,8 +667,8 @@ class Upgrader {
     return false;
   }
 
-  AlertDialog _alertDialog(
-      String title, String message, String? releaseNotes, BuildContext context) {
+  Widget _alertDialog(
+      String title, String message, String? releaseNotes, BuildContext context, bool cupertino) {
     Widget? notes;
     if (releaseNotes != null) {
       notes = Padding(
@@ -659,96 +683,46 @@ class Upgrader {
             ],
           ));
     }
-    return AlertDialog(
-      title: Text(title, key: const Key('upgrader.dialog.title')),
-      content: Container(
+    final textTitle = Text(title, key: const Key('upgrader.dialog.title'));
+    final content = Container(
         constraints: const BoxConstraints(maxHeight: 400),
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              Text(message),
-              Padding(
-                  padding: const EdgeInsets.only(top: 15.0),
-                  child: Text(messages.message(UpgraderMessage.prompt) ?? ''),
-              ),
-              if (notes != null) notes,
-            ],
-          ),
-        ),
-      ),
-      actions: <Widget>[
-        if (showIgnore)
-          TextButton(
-              child: Text(
-                  messages.message(UpgraderMessage.buttonTitleIgnore) ?? ''),
-              onPressed: () => onUserIgnored(context, true)),
-        if (showLater)
-          TextButton(
-              child: Text(
-                  messages.message(UpgraderMessage.buttonTitleLater) ?? ''),
-              onPressed: () => onUserLater(context, true)),
-        TextButton(
-            child:
-                Text(messages.message(UpgraderMessage.buttonTitleUpdate) ?? ''),
-            onPressed: () => onUserUpdated(context, !blocked())),
-      ],
-    );
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(message),
+            Padding(
+                padding: const EdgeInsets.only(top: 15.0),
+                child: Text(messages.message(UpgraderMessage.prompt) ?? '')),
+            if (notes != null) notes,
+          ],
+        )));
+    final actions = <Widget>[
+      if (showIgnore)
+        _button(cupertino, messages.message(UpgraderMessage.buttonTitleIgnore),
+            context, () => onUserIgnored(context, true)),
+      if (showLater)
+        _button(cupertino, messages.message(UpgraderMessage.buttonTitleLater),
+            context, () => onUserLater(context, true)),
+      _button(cupertino, messages.message(UpgraderMessage.buttonTitleUpdate),
+          context, () => onUserUpdated(context, !blocked())),
+    ];
+
+    return cupertino
+        ? CupertinoAlertDialog(
+            title: textTitle, content: content, actions: actions)
+        : AlertDialog(title: textTitle, content: content, actions: actions);
   }
 
-  CupertinoAlertDialog _cupertinoAlertDialog(
-      String title, String message, String? releaseNotes, BuildContext context) {
-    Widget? notes;
-    if (releaseNotes != null) {
-      notes = Padding(
-          padding: const EdgeInsets.only(top: 15.0),
-          child: Column(
-            children: <Widget>[
-              Text(messages.message(UpgraderMessage.releaseNotes) ?? '',
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(
-                releaseNotes,
-                maxLines: 14,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ));
-    }
-    return CupertinoAlertDialog(
-      title: Text(title),
-      content: Column(
-        // mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: <Widget>[
-          Text(message),
-          Padding(
-              padding: const EdgeInsets.only(top: 15.0),
-              child: Text(messages.message(UpgraderMessage.prompt) ?? '')),
-          if (notes != null) notes,
-        ],
-      ),
-      actions: <Widget>[
-        if (showIgnore)
-          CupertinoDialogAction(
-              textStyle: cupertinoButtonTextStyle,
-              child: Text(
-                  messages.message(UpgraderMessage.buttonTitleIgnore) ?? ''),
-              onPressed: () => onUserIgnored(context, true)),
-        if (showLater)
-          CupertinoDialogAction(
-              textStyle: cupertinoButtonTextStyle,
-              child: Text(
-                  messages.message(UpgraderMessage.buttonTitleLater) ?? ''),
-              onPressed: () => onUserLater(context, true)),
-        CupertinoDialogAction(
+  Widget _button(bool cupertino, String? text, BuildContext context,
+      VoidCallback? onPressed) {
+    return cupertino
+        ? CupertinoDialogAction(
             textStyle: cupertinoButtonTextStyle,
-            isDefaultAction: true,
-            child:
-                Text(messages.message(UpgraderMessage.buttonTitleUpdate) ?? ''),
-            onPressed: () => onUserUpdated(context, !blocked())),
-      ],
-    );
+            onPressed: onPressed,
+            child: Text(text ?? ''))
+        : TextButton(onPressed: onPressed, child: Text(text ?? ''));
   }
 
   void onUserIgnored(BuildContext context, bool shouldPop) {
@@ -872,7 +846,7 @@ class Upgrader {
     if (await canLaunchUrl(Uri.parse(_appStoreListingURL!))) {
       try {
         await launchUrl(Uri.parse(_appStoreListingURL!),
-            mode: UpgradeIO.isAndroid
+            mode: upgraderOS.isAndroid
                 ? LaunchMode.externalNonBrowserApplication
                 : LaunchMode.platformDefault);
       } catch (e) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 Larry Aasen. All rights reserved.
+ * Copyright (c) 2021-2023 Larry Aasen. All rights reserved.
  */
 
 import 'package:flutter/material.dart';
@@ -11,8 +11,11 @@ class UpgradeAlert extends UpgradeBase {
   final Widget? child;
 
   /// Creates a new [UpgradeAlert].
-  UpgradeAlert({Key? key, Upgrader? upgrader, this.child})
+  UpgradeAlert({Key? key, Upgrader? upgrader, this.child, this.navigatorKey})
       : super(upgrader ?? Upgrader.sharedInstance, key: key);
+
+  /// For use by the Router architecture as part of the RouterDelegate.
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   /// Describes the part of the user interface represented by this widget.
   @override
@@ -21,15 +24,23 @@ class UpgradeAlert extends UpgradeBase {
       print('upgrader: build UpgradeAlert');
     }
 
-    return FutureBuilder(
-        future: state.initialized,
-        builder: (BuildContext context, AsyncSnapshot<bool> processed) {
-          if (processed.connectionState == ConnectionState.done &&
-              processed.data != null &&
-              processed.data!) {
-            upgrader.checkVersion(context: context);
+    return StreamBuilder(
+      stream: state.widget.upgrader.evaluationStream,
+      builder:
+          (BuildContext context, AsyncSnapshot<UpgraderEvaluateNeed> snapshot) {
+        final checkContext =
+            navigatorKey != null && navigatorKey!.currentContext != null
+                ? navigatorKey!.currentContext!
+                : context;
+        if (snapshot.connectionState == ConnectionState.active &&
+            snapshot.data != null) {
+          if (upgrader.debugLogging) {
+            print("upgrader: need to evaluate version");
           }
-          return child ?? Container();
-        });
+          upgrader.checkVersion(context: checkContext);
+        }
+        return child ?? const SizedBox.shrink();
+      },
+    );
   }
 }
